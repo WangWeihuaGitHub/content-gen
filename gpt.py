@@ -2,11 +2,12 @@ import openai
 import time
 
 # Set up OpenAI API credentials
-openai.api_key = 'API-KEY' 
+openai.api_key = 'API_KEY' 
 
 class GPT:
 
     def run(self, message):
+        init_prompt = "You act as the real estate agent, your task is to write emails to potential customers"
 
         for lead in message:
             customer_name = lead['customer_name']
@@ -23,22 +24,21 @@ class GPT:
                 f"The property's walkscore is {walkscore}.\n"
                 "Please make sure to find and provide the following information with more details and urls:\n"
                 f"- schools with name, ranking around {listing_address} with Urls.\n"
-                f"- amenities, shops and restaurants around {listing_address} with Urls.\n"
-                "Email:")
+                f"- amenities, shops and restaurants around {listing_address} with Urls."
+            )
+            model = [
+                {"role": "system", "content": init_prompt},
+                {"role": "user", "content": prompt}
+            ]
 
-            response = openai.Completion.create(
-                engine="text-davinci-002",
-                prompt=prompt,
+            results = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
                 temperature=0.5,
-                max_tokens=2048,
-                n=1,
-                stop=None,
-                timeout=15,
+                messages=model,
             )
 
             # Extract the email text from the response
-            email_text = response.choices[0].text.strip()
-
-            # Print the email text
+            email_text = results.choices[0].message.content.strip()
+            # Print the email 
             print(f"Real estate lead response email:\n{email_text}\n")
-            time.sleep(3)
+            #time.sleep(3)
